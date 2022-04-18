@@ -1,3 +1,3 @@
-## describe -> robô em python para busca, calculo e analise de fundos imobiliarios.
+## fii -> bot -> decisions
 
 working on...
