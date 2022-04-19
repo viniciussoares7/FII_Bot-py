@@ -1,5 +1,6 @@
 from argparse import Action
 from numpy import inner
+import numpy as np
 import pandas as pd
 from selenium import webdriver
 from selenium.webdriver import ActionChains
@@ -16,6 +17,10 @@ import re
 
 
 class Charles:
+    def begin(self):
+        # self.__init__()
+        # self.web_entry()
+        self.excel_entry()
 
     def __init__(self):
         chrome_options = Options()
@@ -29,11 +34,6 @@ class Charles:
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--no-sandbox')
         self.driver = webdriver.Chrome()
-
-    def begin(self):
-        self.__init__()
-        # self.web_entry()
-        self.excel_entry()
 
     def web_entry(self):
         self.link = 'https://www.b3.com.br/pt_br/produtos-e-servicos/negociacao/renda-variavel/fundos-de-investimentos/fii/fiis-listados/'
@@ -61,9 +61,9 @@ class Charles:
     def excel_entry(self):
         if os.path.exists('C:/Users/vinic/Downloads/fundosListados.csv'):
             self.excel_data = pd.read_csv(
-                r'C:/Users/vinic/Downloads/fundosListados.csv')
-        self.excel_data = []
-        print(pd.DataFrame(self.excel_data))
+                r'C:/Users/vinic/Downloads/fundosListados.csv', sep=';', encoding='latin-1')
+            df = pd.DataFrame(self.excel_data, columns=[r'Código'])
+            print(df)
 
 
 start = Charles()
