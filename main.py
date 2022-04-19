@@ -23,9 +23,10 @@ import re
 
 class Charles:
     def begin(self):
-        # self.__init__()
-        # self.web_entry()
+        self.__init__()
+        # self.web_entry_b3()
         self.excel_entry()
+        self.fundamentus()
 
     def __init__(self):
         chrome_options = Options()
@@ -40,7 +41,7 @@ class Charles:
         chrome_options.add_argument('--no-sandbox')
         self.driver = webdriver.Chrome()
 
-    def web_entry(self):
+    def web_entry_b3(self):
         self.link = 'https://www.b3.com.br/pt_br/produtos-e-servicos/negociacao/renda-variavel/fundos-de-investimentos/fii/fiis-listados/'
         self.driver.get(self.link)
         self.driver.implicitly_wait(10)
@@ -64,38 +65,65 @@ class Charles:
         self.driver.close()
 
     def excel_entry(self):
+        # -------------------  Criação do arquivo excel -------------------
         if os.path.exists('C:/Users/vinic/Downloads/fundosListados.csv'):
+            # ------------------- Inserindo dados no excel base -------------------------------------------------
             self.excel_data = pd.read_csv(
                 r'C:/Users/vinic/Downloads/fundosListados.csv', sep=';', encoding='latin-1')
-            df = pd.DataFrame(self.excel_data, columns=[r'Código'])
-            # print(df)
-        # ------------------- Inserindo dados no excel -------------------------------------------------
+            #self.excel_data = self.excel_data.astype(str)
+            # ---------- tratativa ----------
+            # for column in self.excel_data.columns:
+            #    self.excel_data[column] = self.excel_data[column].str.replace(
+            #        r'\W', "")
+            df = pd.DataFrame(self.excel_data, columns=[r'Codigo'])
+            print(df)
         df.to_excel("C:/bots/Charles/fundos_imob.xlsx")
+        sleep(2)
+
+    def fundamentus(self):
         df2 = pd.read_excel("C:/bots/Charles/fundos_imob.xlsx")
         df2.drop(['Unnamed: 0'], axis=1, inplace=True)
-        #writer = pd.ExcelWriter('C:/bots/Charles/fundos_imob.xlsx')
-        #df2.to_excel(writer, 'Sheet1')
-        # writer.save()
-        # -------------------------------------------------------------------------------------------------
-        #browser = webdriver.Chrome()
-        #df2 = pd.DataFrame(columns=[r'Código'])
         baseUrl = 'https://fundamentus.com.br/detalhes.php?papel='
 
         fii_list = df2.values.tolist()
-        #values = []
+        rows = []
+        # ------------------- Coletando dados no site Fundamentus -------------------------------------------------
         for fii in fii_list:
             fii = fii[0]
-
             self.driver.get(baseUrl + fii + '11')
-            sleep(1)
-            msg = self.driver.find_element(
-                by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > div > div > h1').text
-            if msg == 'Nenhum papel encontrado':
-                print('Nenhum papel encontrado')
-                continue
-            else:
-                #pvp = self.driver.find_element(by=By.XPATH, value='/html/body/div[1]/div[2]/table[3]/tbody/tr[4]/td[4]/span').inner_text
-                print(fii)
+            # sleep(0.5)
+            try:
+                msg = self.driver.find_element(
+                    by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > div > div > h1').text
+                print(msg)
+            except:
+                #print('Codigo FII: ' + fii)
+                # get p/vp
+                pvp = self.driver.find_element(
+                    by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(5) > tbody > tr:nth-child(4) > td:nth-child(4) > span').text
+                #print('PVP: ' + pvp)
+                # get dividend yield
+                dy = self.driver.find_element(
+                    by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(5) > tbody > tr:nth-child(3) > td:nth-child(4) > span').text
+                #print('DY: ' + dy)
+                # get cotação
+                cotacao = self.driver.find_element(
+                    by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(3) > tbody > tr:nth-child(1) > td.data.destaque.w3 > span').text
+                #print('Cotacao: ' + cotacao)
+                # get patrimonio liquido
+                patrimonio_liquido = self.driver.find_element(
+                    by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(5) > tbody > tr:nth-child(12) > td:nth-child(6) > span').text
+                #print('patrimonio liquido: ' + patrimonio_liquido)
+                # get Segmento
+                segmento = self.driver.find_element(
+                    by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(3) > tbody > tr:nth-child(4) > td:nth-child(2) > span > a').text
+                #print('Segmento: ' + segmento)
+                rows.append(
+                    [fii, pvp, dy, cotacao, patrimonio_liquido, segmento])
+        df = pd.DataFrame(rows, columns=[
+                          "Codigo FII", "p/vp", "Dividend Yield", "Cotacao", "Patrimonio Liquido", "Segmento"])
+        print(df)
+        df.to_excel("C:/bots/Charles/fundos_imobiliarios.xlsx")
 
 
 start = Charles()
