@@ -1,32 +1,22 @@
-from argparse import Action
-from ctypes import wstring_at
-from multiprocessing.connection import wait
-from operator import index
-from unittest import skip
-from numpy import inner
-import numpy as np
-from openpyxl import load_workbook, Workbook
+from openpyxl import load_workbook
 import pandas as pd
 from selenium import webdriver
-from selenium.webdriver import ActionChains
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import *
 from time import sleep
-import smtplib
 import os
-from email.message import EmailMessage
 import re
 
 
 class Charles:
     def begin(self):
-        self.__init__()
+        # self.__init__()
         # self.web_entry_b3()
-        self.excel_entry()
-        self.fundamentus()
+        # self.excel_entry()
+        # self.fundamentus()
+        self.filtros()
 
     def __init__(self):
         chrome_options = Options()
@@ -122,8 +112,29 @@ class Charles:
                     [fii, pvp, dy, cotacao, patrimonio_liquido, segmento])
         df = pd.DataFrame(rows, columns=[
                           "Codigo FII", "p/vp", "Dividend Yield", "Cotacao", "Patrimonio Liquido", "Segmento"])
-        print(df)
+        # print(df)
         df.to_excel("C:/bots/Charles/fundos_imobiliarios.xlsx")
+
+    def filtros(self):
+        df = pd.read_excel("C:/bots/Charles/fundos_imobiliarios.xlsx")
+        df.drop(['Unnamed: 0'], axis=1, inplace=True)
+        # ------------------- Tratando Colunas -------------------------------------------------
+        df['Dividend Yield'] = df['Dividend Yield'].str.replace(
+            r",", ".")
+        df['Dividend Yield'] = df['Dividend Yield'].str.replace(r"%", "")
+        df['Dividend Yield'] = pd.to_numeric(df['Dividend Yield'])
+        df['Patrimonio Liquido'] = df['Patrimonio Liquido'].str.replace(
+            r".", "")
+        df['Patrimonio Liquido'] = pd.to_numeric(df['Patrimonio Liquido'])
+        df['p/vp'] = df['p/vp'].str.replace(r",", ".")
+        df['p/vp'] = pd.to_numeric(df['p/vp'])
+        # ------------------- Paramêtros -------------------------------------------------
+        param_dy = df['Dividend Yield'] >= 9
+        param_patrimonio = df['Patrimonio Liquido'] >= 1000000000
+        param_pvp = df['p/vp'] <= 0.95
+        df2 = df[['Codigo FII', 'Dividend Yield', 'Patrimonio Liquido',
+                  'p/vp']][param_dy & param_patrimonio & param_pvp]
+        print(df2)
 
 
 start = Charles()
