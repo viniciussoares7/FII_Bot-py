@@ -12,3 +12,7 @@ A ideia central do projeto é poupar tempo para a pessoa interessada em comprar 
 ## Status
 
 O projeto encontra-se em andamento.
+
+## Exemplo de Output
+
+<img src="Images/fii.png">
