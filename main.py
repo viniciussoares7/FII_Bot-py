@@ -1,3 +1,4 @@
+from distutils.log import error
 from email.mime.text import MIMEText
 from multiprocessing.connection import wait
 from openpyxl import load_workbook
@@ -21,15 +22,14 @@ from email.mime.multipart import MIMEMultipart
 
 # Global Variables
 user = os.getlogin()
-#server = smtplib.SMTP('smtp.gmail.com', 587)
 
 
 class Charles:
     def begin(self):
-        # self.__init__()
-        # self.web_entry_b3()
-        # self.excel_entry()
-        # self.fundamentus()
+        self.__init__()
+        self.web_entry_b3()
+        self.excel_entry()
+        self.fundamentus()
         self.filtros()
         self.emailtask()
 
@@ -99,6 +99,7 @@ class Charles:
         # ------------------- Coletando dados no site Fundamentus -------------------------------------------------
         for fii in fii_list:
             fii = fii[0]
+            sleep(1)
             self.driver.get(baseUrl + fii + '11')
             sleep(1)
             try:
@@ -106,28 +107,33 @@ class Charles:
                     by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > div > div > h1').text
                 print(msg)
             except:
-                # extrai p/vp do site fundamentus
-                pvp = self.driver.find_element(
-                    by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(5) > tbody > tr:nth-child(4) > td:nth-child(4) > span').text
-                # extrai dividend yield do site fundamentus
-                dy = self.driver.find_element(
-                    by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(5) > tbody > tr:nth-child(3) > td:nth-child(4) > span').text
-                # extrai cotação do site fundamentus
-                cotacao = self.driver.find_element(
-                    by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(3) > tbody > tr:nth-child(1) > td.data.destaque.w3 > span').text
-                # get patrimonio liquido
-                patrimonio_liquido = self.driver.find_element(
-                    by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(5) > tbody > tr:nth-child(12) > td:nth-child(6) > span').text
-                # extrai Segmento do site fundamentus
-                segmento = self.driver.find_element(
-                    by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(3) > tbody > tr:nth-child(4) > td:nth-child(2) > span > a').text
-                rows.append(
-                    [fii, pvp, dy, cotacao, patrimonio_liquido, segmento])
+                try:
+                    # extrai p/vp do site fundamentus
+                    pvp = self.driver.find_element(
+                        by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(5) > tbody > tr:nth-child(4) > td:nth-child(4) > span').text
+                    # extrai dividend yield do site fundamentus
+                    dy = self.driver.find_element(
+                        by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(5) > tbody > tr:nth-child(3) > td:nth-child(4) > span').text
+                    # extrai cotação do site fundamentus
+                    cotacao = self.driver.find_element(
+                        by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(3) > tbody > tr:nth-child(1) > td.data.destaque.w3 > span').text
+                    # get patrimonio liquido
+                    patrimonio_liquido = self.driver.find_element(
+                        by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(5) > tbody > tr:nth-child(12) > td:nth-child(6) > span').text
+                    # extrai Segmento do site fundamentus
+                    segmento = self.driver.find_element(
+                        by=By.CSS_SELECTOR, value='body > div.center > div.conteudo.clearfix > table:nth-child(3) > tbody > tr:nth-child(4) > td:nth-child(2) > span > a').text
+                    rows.append(
+                        [fii, pvp, dy, cotacao, patrimonio_liquido, segmento])
+                except Exception as e:
+                    print(e)
+                    print('erro ao extrair dados do site fundamentus' +
+                          '\n' + 'Descricao do Erro:' + str(e))
         sleep(1)
         self.driver.close()
         df = pd.DataFrame(rows, columns=[
                           "Codigo FII", "p/vp", "Dividend Yield", "Cotacao", "Patrimonio Liquido", "Segmento"])
-        # print(df)
+        print(df)
         df.to_excel('C:/Users/' + user + '/Downloads/fundos_imobiliarios.xlsx')
         # remove o arquivo xlsx já utilizado
         os.remove('C:/Users/' + user + '/Downloads/fundos_imob.xlsx')
@@ -182,7 +188,7 @@ class Charles:
         sender_email = 'robopython.fii@gmail.com'  # 'E-mail do remetente'
         password = 'pythonfundosimobiliarios'   # senha do email
         # 'E-mail do destinatário'
-        receiver_email = 'insert@email.here'
+        receiver_email = 'vinicius-a-soares@outlook.com'
 
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
             server.login(sender_email, password)
