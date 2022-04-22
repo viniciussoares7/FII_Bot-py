@@ -188,7 +188,7 @@ class Charles:
         sender_email = 'robopython.fii@gmail.com'  # 'E-mail do remetente'
         password = 'pythonfundosimobiliarios'   # senha do email
         # 'E-mail do destinatário'
-        receiver_email = 'vinicius-a-soares@outlook.com'
+        receiver_email = 'inserir email destinatario'
 
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
             server.login(sender_email, password)
